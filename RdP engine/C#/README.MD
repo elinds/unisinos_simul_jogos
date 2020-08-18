@@ -64,7 +64,7 @@ public Boolean IsEmpty()
         int id;
         String label;
         bool enabled;
-        bool _riggerable;
+        bool _triggerable;
         int priority;
 
 public Transition()
