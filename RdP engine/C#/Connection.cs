@@ -13,7 +13,7 @@ public enum ArcTypes
     Reset = 2
 }
 
-class Connection
+public class Connection
 {
     public ArcTypes Type
     {

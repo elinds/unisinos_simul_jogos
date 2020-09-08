@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RdPengine
 {
@@ -13,23 +10,47 @@ namespace RdPengine
         Out = 1,
         InOrOut = 2
     }
-    class Place
+    public class Place
     {
         private int _iD;
         private String _label;
         private int _tokens;
+        private Queue tokensQueue; 
         
         private Boolean _hasConcurrency;
         private ArrayList concTransitionsList;
 
-        private Boolean _autoExec;
+        private Boolean _autoExec; //for places starting with #
         
+        private Boolean _external;  //for places starting with !
+        private String externalNetName;
+        private String externalPlaceName;
+
         public delegate void Del();
         private Del ChangeOcurredCallback;
         private Del CallAutoExec;
         private Dictionary<String,Del> callbacksWhenTokensAdded = new Dictionary<String,Del>();
         private Dictionary<String,Del> callbacksWhenTokensRemoved = new Dictionary<String,Del>();
+
+        private Logger log;
+        private PNid pnid;
         
+        public bool External
+        {
+            get => _external;
+            set => _external = value;
+        }
+        public string ExternalNetName
+        {
+            get => externalNetName;
+            set => externalNetName = value;
+        }
+
+        public string ExternalPlaceName
+        {
+            get => externalPlaceName;
+            set => externalPlaceName = value;
+        }
         public bool AutoExec
         {
             get => _autoExec;
@@ -49,19 +70,32 @@ namespace RdPengine
         {
             get => _tokens;
             set {
-                if (value < _tokens && callbacksWhenTokensRemoved.Count > 0)
+                //detects if its a REMOVE TOKENS operation
+                if (value < _tokens)
                 {
-                    ExecCallbacksWhenTokensRemoved();
+                    //dequeue pnids (they are lost, i.e., not propagated to transition->output places) 
+                    for (int i = 0; i < (_tokens - value); i++)
+                        this.tokensQueue.Dequeue();
+                    
+                    if(callbacksWhenTokensRemoved.Count > 0)
+                        ExecCallbacksWhenTokensRemoved();
                 }
                 else
-                {
-                    if (value > _tokens && callbacksWhenTokensAdded.Count > 0)
+                {   //detects if its a ADD TOKEN operation
+                    if (value > _tokens)
                     {
-                        ExecCallbacksWhenTokensAdded();
+                        //enqueue only additional pnids (all null)
+                        for (int i = 0; i < (value - _tokens) ; i++)
+                            this.tokensQueue.Enqueue(new PNidList(pnid));
+                        
+                        if(callbacksWhenTokensAdded.Count > 0)
+                            ExecCallbacksWhenTokensAdded();
                     }  
                 }
                 _tokens = value;
+                
                 ChangeOcurredCallback();
+                
                 if (_autoExec)
                     CallAutoExec();
             }
@@ -73,41 +107,86 @@ namespace RdPengine
             set => _hasConcurrency = value;
         }
 
-        public Place(Del callbackChangeOcurred, Del callbackAutoExec)
+        public Place(Del callbackChangeOcurred, Del callbackAutoExec, PNid pnid, Logger log)
         {
             this._tokens = 0;
+            tokensQueue = new Queue(); 
+            
             this._hasConcurrency = false;
             concTransitionsList = new ArrayList();
+            
             this.ChangeOcurredCallback = callbackChangeOcurred;
             this.CallAutoExec = callbackAutoExec;
             this._autoExec = false;
+
+            this.pnid = pnid;
+            this.log = log;
         }
 
-        public void AddTokens(int quantity)
+        public void AddTokens(int quantity) //invoked by user 
+        {
+            this.AddTokens(quantity, new PNidList(pnid));
+        }
+        public void AddTokens(int quantity, PetriNet pn) //invoked by user 
+        {
+            this.AddTokens(quantity, new PNidList(pn.Id));
+        }
+        
+        public void AddTokens(int quantity, PNidList pnids) //directly invoked by ExecCycle 
         {
             if (this._tokens + quantity >= 0)
             {
+                for (int i = 0; i < quantity; i++)
+                    this.tokensQueue.Enqueue(pnids); //to clone each one?
                 this._tokens += quantity;
+
                 ChangeOcurredCallback();
-                if(callbacksWhenTokensAdded.Count > 0)
+                
+                if (callbacksWhenTokensAdded.Count > 0)
                     ExecCallbacksWhenTokensAdded();
+                
                 if (_autoExec)
                     CallAutoExec();
             }
         }
-        public Boolean RemTokens(int quantity)
+        public ArrayList RemTokens(int quantity) //returns ArrayList of PNids
         {
+            ArrayList removedTokens = new ArrayList();  //of PNids (possibly repeated)
+            
             if (this._tokens - quantity >= 0)
             {
                 this._tokens = this._tokens - quantity;
+                try
+                {
+                    for (int i = 0; i < quantity; i++)
+                    {
+                        PNidList pl = (PNidList) this.tokensQueue.Dequeue();
+                        foreach (PNid p in pl.Pnidlist)
+                        {
+                            removedTokens.Add(p);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    log.Exec("\nPlace " + _label + ": Exception while trying to remove tokens (dequeue) . >> " + e.Message + " " + e.GetType().ToString());
+                }
+                
                 ChangeOcurredCallback();
+                
                 if(callbacksWhenTokensRemoved.Count > 0)
                     ExecCallbacksWhenTokensRemoved();
-                if (_autoExec)
+
+
+                /*
+                 autoexec only when adding tokens...
+                 if (_autoExec)
                     CallAutoExec();
-                return true;
+                */
+                
+                return removedTokens;  //returns ArrayList of PNids
             }
-            return false;
+            return null;
         }
         
         public Boolean IsEmpty()
