@@ -34,8 +34,8 @@
         </place>
         <place>
             <id>4</id>
-            <x>238</x>
-            <y>94</y>
+            <x>217</x>
+            <y>196</y>
             <label>#CollisionWithBoss</label>
             <tokens>0</tokens>
             <isStatic>false</isStatic>
@@ -112,6 +112,14 @@
             <tokens>0</tokens>
             <isStatic>false</isStatic>
         </place>
+        <place>
+            <id>23</id>
+            <x>164</x>
+            <y>91</y>
+            <label>!enemy.#CollisionWithPlayer</label>
+            <tokens>0</tokens>
+            <isStatic>false</isStatic>
+        </place>
         <transition>
             <id>8</id>
             <x>-179</x>
@@ -132,8 +140,8 @@
         </transition>
         <transition>
             <id>12</id>
-            <x>111</x>
-            <y>129</y>
+            <x>117</x>
+            <y>195</y>
             <label/>
         </transition>
         <transition>
@@ -166,6 +174,12 @@
             <y>-10</y>
             <label/>
         </transition>
+        <arc>
+            <type>regular</type>
+            <sourceId>14</sourceId>
+            <destinationId>23</destinationId>
+            <multiplicity>1</multiplicity>
+        </arc>
         <arc>
             <type>inhibitor</type>
             <sourceId>21</sourceId>
@@ -300,26 +314,26 @@
         </arc>
         <arc>
             <type>regular</type>
-            <sourceId>9</sourceId>
-            <destinationId>5</destinationId>
-            <multiplicity>1</multiplicity>
-            <breakPoint>
-                <x>-288</x>
-                <y>19</y>
-            </breakPoint>
-            <breakPoint>
-                <x>-289</x>
-                <y>-53</y>
-            </breakPoint>
-        </arc>
-        <arc>
-            <type>regular</type>
             <sourceId>20</sourceId>
             <destinationId>13</destinationId>
             <multiplicity>1</multiplicity>
             <breakPoint>
                 <x>-15</x>
                 <y>30</y>
+            </breakPoint>
+        </arc>
+        <arc>
+            <type>regular</type>
+            <sourceId>9</sourceId>
+            <destinationId>5</destinationId>
+            <multiplicity>1</multiplicity>
+            <breakPoint>
+                <x>-299</x>
+                <y>20</y>
+            </breakPoint>
+            <breakPoint>
+                <x>-299</x>
+                <y>-53</y>
             </breakPoint>
         </arc>
     </subnet>

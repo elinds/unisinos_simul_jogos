@@ -40,6 +40,14 @@
             <tokens>0</tokens>
             <isStatic>false</isStatic>
         </place>
+        <place>
+            <id>169</id>
+            <x>-529</x>
+            <y>-28</y>
+            <label>#CollisionWithPlayer</label>
+            <tokens>0</tokens>
+            <isStatic>false</isStatic>
+        </place>
         <transition>
             <id>11</id>
             <x>-26</x>
@@ -68,6 +76,12 @@
             <id>15</id>
             <x>-370</x>
             <y>-170</y>
+            <label/>
+        </transition>
+        <transition>
+            <id>170</id>
+            <x>-530</x>
+            <y>-95</y>
             <label/>
         </transition>
         <arc>
@@ -164,6 +178,18 @@
             <type>regular</type>
             <sourceId>15</sourceId>
             <destinationId>10</destinationId>
+            <multiplicity>1</multiplicity>
+        </arc>
+        <arc>
+            <type>regular</type>
+            <sourceId>169</sourceId>
+            <destinationId>170</destinationId>
+            <multiplicity>1</multiplicity>
+        </arc>
+        <arc>
+            <type>regular</type>
+            <sourceId>170</sourceId>
+            <destinationId>3</destinationId>
             <multiplicity>1</multiplicity>
         </arc>
     </subnet>
