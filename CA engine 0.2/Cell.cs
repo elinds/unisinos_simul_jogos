@@ -1,4 +1,7 @@
-﻿namespace CAengine
+﻿/*
+ * CA engine 0.2
+ */
+namespace CAengine
 {
     public class Cell
     {

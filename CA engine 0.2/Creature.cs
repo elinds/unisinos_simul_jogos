@@ -1,4 +1,7 @@
-﻿using System.Collections;
+﻿/*
+ * CA engine 0.2
+ */
+using System.Collections;
 using System.Collections.Generic;
 using CAengine;
 using UnityEngine;
@@ -17,7 +20,11 @@ namespace CAengine
         private int groundElevation;
 
         private int factor;
+        //private float scale;
         private int cntr = 0;
+        
+        private int adjustX;
+        private int adjustZ;
 
         public void Init(CA ca, int factor, GameObject gob, int refreshRate = 100, int groudElevation = 0)
         {
@@ -27,7 +34,11 @@ namespace CAengine
             this.refreshRate = refreshRate;
             this.groundElevation = groudElevation;
             cellsAlive = ca.GetAlives();
-            createCreature();
+            
+            adjustX = (ca.Lin / 2);
+            adjustZ = (ca.Col / 2);
+
+            CreateCreature();
         }        
 
         public void Update()
@@ -35,27 +46,58 @@ namespace CAengine
             cntr++;
             if (cntr == refreshRate)
             {
-                clearCreature();
                 cellsAlive = ca.Next();
-                createCreature();
+                UpdateCreature();
                 cntr = 0;
             }
  }
-        private void createCreature()
+        private void CreateCreature()
         {
-            int adjustX = (ca.Lin / 2) / factor;
-            int adjustZ = (ca.Col / 2) / factor;
             int i = 0;
             while (i < cellsAlive.Count)
             {
                 creatureGo.Add(Instantiate(gob));
                 gob.transform.position = new Vector3(cellsAlive[i].Lin - adjustX ,cellsAlive[i].Hei - 3 + this.groundElevation,cellsAlive[i].Col - adjustZ);
-                //gob.transform.localScale = new Vector3(-0.5f, -0.5f, -0.5f);
                 i++;
             }
         }
+        private void UpdateCreature()
+        {
+            int i;
+            int diff = cellsAlive.Count - creatureGo.Count;
+            //equalizes quantities of cells alive and Gobs
+            if (diff > 0)  
+            {
+                i = 0;
+                while (i < diff)
+                {
+                    creatureGo.Add(Instantiate(gob));
+                    i++;
+                }
+            }
+            else
+            {
+                if (diff < 0)
+                {
+                    i = 0;
+                    while (i < (diff * -1))
+                    {
+                        Destroy(creatureGo[0]);
+                        creatureGo.RemoveAt(0);
+                        i++;
+                    }
+                }
+            }
 
-        private void clearCreature()
+            i = 0;
+            while (i < cellsAlive.Count)
+            {
+                creatureGo[i].transform.position = new Vector3(cellsAlive[i].Lin - adjustX ,cellsAlive[i].Hei - 3 + this.groundElevation,cellsAlive[i].Col - adjustZ);
+                //creatureGo[i].transform.localScale = new Vector3(1 + cellsAlive[i].Hei, 1, 1 + cellsAlive[i].Hei);
+                i++;
+            }
+        }
+        private void ClearCreature()
         {
             int i = 0;
             while (i < creatureGo.Count)

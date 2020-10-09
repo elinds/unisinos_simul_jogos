@@ -1,4 +1,7 @@
-﻿using System;
+﻿/*
+ * CA engine 0.2
+ */
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
